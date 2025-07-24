@@ -29,6 +29,7 @@ export async function getHouseCandidates(house: string): Promise<Candidate[]> {
     
     // Convert MongoDB documents to plain objects
     return candidates.map(doc => ({
+      _id: doc._id?.toString() || '', // Include _id as required by Candidate interface
       id: doc.id?.toString() || doc._id?.toString() || '', // Convert ObjectId to string
       name: doc.name || '',
       standard: doc.standard || '',
@@ -36,8 +37,8 @@ export async function getHouseCandidates(house: string): Promise<Candidate[]> {
       photo: doc.photo || '',
       emoji: doc.emoji || '',
       votes: doc.votes || 0,
-      createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
-      updatedAt: doc.updatedAt ? new Date(doc.updatedAt).toISOString() : null,
+      createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : undefined,
+      updatedAt: doc.updatedAt ? new Date(doc.updatedAt).toISOString() : undefined,
     }))
   } catch (error) {
     console.error('Error fetching house candidates:', error)
@@ -51,6 +52,7 @@ export async function getElectionResults(): Promise<Candidate[]> {
     
     // Convert MongoDB documents to plain objects
     return results.map(doc => ({
+      _id: doc._id?.toString() || '', // Include _id as required by Candidate interface
       id: doc.id?.toString() || doc._id?.toString() || '', // Convert ObjectId to string
       name: doc.name || '',
       standard: doc.standard || '',
@@ -58,8 +60,8 @@ export async function getElectionResults(): Promise<Candidate[]> {
       photo: doc.photo || '',
       emoji: doc.emoji || '',
       votes: doc.votes || 0,
-      createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
-      updatedAt: doc.updatedAt ? new Date(doc.updatedAt).toISOString() : null,
+      createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : undefined,
+      updatedAt: doc.updatedAt ? new Date(doc.updatedAt).toISOString() : undefined,
     }))
   } catch (error) {
     console.error('Error fetching election results:', error)
@@ -69,7 +71,7 @@ export async function getElectionResults(): Promise<Candidate[]> {
 
 export async function submitVote(formData: FormData) {
   try {
-    const candidateId = parseInt(formData.get('candidateId') as string)
+    const candidateId = formData.get('candidateId') as string
     const candidateName = formData.get('candidateName') as string
     const house = formData.get('house') as string
     const standard = formData.get('standard') as string

@@ -1,10 +1,8 @@
-
 // lib/models/types.ts
-
 
 export interface Vote {
   _id?: string
-  candidateId: number
+  candidateId: string // Changed from number to string
   candidateName: string
   house: string
   standard: string
@@ -19,30 +17,28 @@ export interface VoterSession {
   _id?: string
   sessionId: string
   voterType: 'student' | 'teacher'
-  votedCandidates: number[]
+  votedCandidates: string[] // Changed from number[] to string[]
   createdAt: Date
   lastVoteAt?: Date
 }
 
-
-
 export interface Candidate {
-  _id: any
-  id: string; // Changed from ObjectId to string
+  _id: string;
+  id: string; // Keep as string
   name: string;
   standard?: string;
   house: string;
   photo?: string;
   emoji?: string;
   votes: number;
-  createdAt?: string; // Changed from Date to string
-  updatedAt?: string; // Changed from Date to string
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // If you need the original MongoDB document type, create a separate interface
 export interface CandidateDocument {
   _id: any; // MongoDB ObjectId
-  id: number;
+  id: string; // Changed from number to string
   name: string;
   standard?: string;
   house: string;

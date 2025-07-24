@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: 'School Election 2024',
   description: 'Vote for your favorite house!',
+   icons: {
+    icon: '/logo.png', // or /logo.svg
+  },
 }
 
 

@@ -4,6 +4,7 @@ import { Users, GraduationCap, Crown, Star, Waves, Sun, Leaf, Flame, Settings, L
 import { useRouter } from 'next/navigation'
 import { createVoterSession } from '@/lib/action'
 import Image from 'next/image'
+
 // Enhanced house type definition
 interface House {
   name: string
@@ -18,6 +19,17 @@ interface House {
   emoji: string
   borderColor: string
   hoverShadow: string
+}
+
+// Particle interface for type safety
+interface Particle {
+  id: number
+  width: number
+  height: number
+  left: number
+  top: number
+  animationDelay: number
+  animationDuration: number
 }
 
 const houses: House[] = [
@@ -94,9 +106,14 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [showStats, setShowStats] = useState(false)
+  const [particles, setParticles] = useState<Particle[]>([])
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    // Mark component as mounted to prevent hydration issues
+    setIsMounted(true)
+    
     // Generate unique session ID with better entropy
     const generateSessionId = () => {
       const timestamp = Date.now().toString(36)
@@ -114,6 +131,21 @@ export default function Home() {
       setSessionId(generateSessionId())
     }
     
+    // Generate particles only on client side
+    const generateParticles = (): Particle[] => {
+      return Array.from({ length: 25 }, (_, i) => ({
+        id: i,
+        width: 4 + Math.random() * 8,
+        height: 4 + Math.random() * 8,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        animationDelay: Math.random() * 5,
+        animationDuration: 3 + Math.random() * 4
+      }))
+    }
+    
+    setParticles(generateParticles())
+    
     // Add entrance animation with staggered timing
     setIsAnimating(true)
     const timer = setTimeout(() => setIsAnimating(false), 1500)
@@ -122,6 +154,8 @@ export default function Home() {
 
   // Helper function to get stored session data with fallback
   const getStoredSessionData = (): any => {
+    if (typeof window === 'undefined') return null
+    
     try {
       // Try sessionStorage first
       const sessionData = sessionStorage.getItem('voterSession')
@@ -144,6 +178,8 @@ export default function Home() {
 
   // Helper function to store session data with fallback
   const storeSessionData = (data: any): void => {
+    if (typeof window === 'undefined') return
+    
     try {
       // Try sessionStorage first
       sessionStorage.setItem('voterSession', JSON.stringify(data))
@@ -210,8 +246,8 @@ export default function Home() {
           router.push(`/house/${house.color}?voterType=${voterType}&sessionId=${sessionId}`)
         }, 500)
       } else {
-       const errorMessage = (result as any).error || 'Failed to create voting session';
-  throw new Error(errorMessage);
+        const errorMessage = (result as any).error || 'Failed to create voting session';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error creating session:', error)
@@ -230,6 +266,17 @@ export default function Home() {
     setShowStats(!showStats)
   }
 
+  // Don't render particles until component is mounted
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white text-xl">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Enhanced Background Animation */}
@@ -240,19 +287,19 @@ export default function Home() {
         <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
-      {/* Enhanced floating particles */}
+      {/* Enhanced floating particles - Only render on client */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(25)].map((_, i) => (
+        {particles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="absolute bg-white rounded-full opacity-20 animate-bounce"
             style={{
-              width: `${4 + Math.random() * 8}px`,
-              height: `${4 + Math.random() * 8}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`
+              width: `${particle.width}px`,
+              height: `${particle.height}px`,
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              animationDelay: `${particle.animationDelay}s`,
+              animationDuration: `${particle.animationDuration}s`
             }}
           />
         ))}
@@ -269,54 +316,51 @@ export default function Home() {
         </button>
       </div>
 
-     
-
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
         {/* Enhanced Header Section */}
         <div className={`text-center mb-12 ${isAnimating ? 'animate-fade-in-down' : ''}`}>
-  <div className="relative">
-    <h1 className="flex items-center justify-center gap-4 flex-wrap text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-4 animate-gradient-x">
-      <Image
-        src="/SCHOOL LOGO JPG.jpg"
-        alt="School Logo"
-        width={80}
-        height={80}
-        className="object-cover rounded-full"
-      />
-      ST. APPOLLONIA'S CONVENT ENGLISH SCHOOL
-    </h1>
+          <div className="relative">
+            <h1 className="flex items-center justify-center gap-4 flex-wrap text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-4 animate-gradient-x">
+              <Image
+                src="/SCHOOL LOGO JPG.jpg"
+                alt="School Logo"
+                width={80}
+                height={80}
+                className="object-cover rounded-full"
+              />
+              ST. APPOLLONIA'S CONVENT ENGLISH SCHOOL
+            </h1>
 
-    <div
-      className="absolute -top-4 -right-4 text-4xl animate-spin"
-      style={{ animationDuration: '3s' }}
-    >
-      ⭐
-    </div>
-    <div
-      className="absolute -bottom-2 -left-4 text-2xl animate-bounce"
-      style={{ animationDelay: '1s' }}
-    >
-      🎓
-    </div>
-  </div>
+            <div
+              className="absolute -top-4 -right-4 text-4xl animate-spin"
+              style={{ animationDuration: '3s' }}
+            >
+              ⭐
+            </div>
+            <div
+              className="absolute -bottom-2 -left-4 text-2xl animate-bounce"
+              style={{ animationDelay: '1s' }}
+            >
+              🎓
+            </div>
+          </div>
 
-  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 animate-fade-in">
-    Election 2024
-  </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 animate-fade-in">
+            Election 2024
+          </h2>
 
-  <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-    Cast your vote and shape the future of our school community.{' '}
-    <span className="text-yellow-400 font-semibold">Every voice matters!</span>
-  </p>
-
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            Cast your vote and shape the future of our school community.{' '}
+            <span className="text-yellow-400 font-semibold">Every voice matters!</span>
+          </p>
 
           {/* Enhanced decorative elements */}
           <div className="flex justify-center gap-4 mt-6">
             <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
-<div
-  className="w-2 h-2 bg-pink-400 rounded-full animate-ping"
-  style={{ animationDelay: '1s' }}
-></div>
+            <div
+              className="w-2 h-2 bg-pink-400 rounded-full animate-ping"
+              style={{ animationDelay: '1s' }}
+            ></div>
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
           </div>
         </div>
@@ -478,7 +522,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-  )
+
       {/* Custom styles for animations */}
       <style jsx>{`
         @keyframes gradient-x {
