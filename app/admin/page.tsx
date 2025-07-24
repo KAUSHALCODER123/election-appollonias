@@ -98,39 +98,42 @@ const AdminPanel = () => {
   }
 
   const handleExportData = async () => {
-    try {
-      setExporting(true)
-      const dataToExport = {
-        timestamp: new Date().toISOString(),
-        totalVotes: results.reduce((sum, c) => sum + c.votes, 0),
-        totalCandidates: results.length,
-        results: results.map(candidate => ({
-          name: candidate.name,
-          house: candidate.house,
-          votes: candidate.votes,
-          percentage: ((candidate.votes / results.reduce((sum, c) => sum + c.votes, 0)) * 100).toFixed(2)
-        }))
-      }
-
-      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `election-results-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      
-      showMessage('✅ Data exported successfully', 'success')
-    } catch (error) {
-      console.error('Error exporting data:', error)
-      showMessage('❌ Error exporting data', 'error')
-    } finally {
-      setExporting(false)
-    }
+  try {
+    setExporting(true)
+    
+    const totalVotes = results.reduce((sum, c) => sum + c.votes, 0)
+    
+    // Create CSV header
+    const csvHeader = 'Name,House,Votes,Percentage\n'
+    
+    // Create CSV rows
+    const csvRows = results.map(candidate => {
+      const percentage = ((candidate.votes / totalVotes) * 100).toFixed(2)
+      return `"${candidate.name}","${candidate.house}",${candidate.votes},${percentage}%`
+    }).join('\n')
+    
+    // Combine header and rows
+    const csvContent = csvHeader + csvRows
+    
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `voting_results_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    setExporting(false)
+  } catch (error) {
+    console.error('Error exporting CSV:', error)
+    setExporting(false)
   }
-
+}
   const handleBackToHome = () => {
     router.push('/')
   }
