@@ -25,7 +25,7 @@ export async function initializeCandidates() {
   { id: '15', name: 'Lakshmi Yadav', standard: 'VIII', house: 'yellow', photo: '15.jpeg', emoji: '👩‍🎓', votes: 0 },
   { id: '16', name: 'Bhumi Sah', standard: 'IX', house: 'yellow', photo: '16.jpeg', emoji: '👩‍🎓', votes: 0 },
 
-  { id: '17', name: 'Vishal Parihariya', standard: 'VIII', house: 'blue', photo: '17.jpg', emoji: '👨‍🎓', votes: 0 },
+  { id: '17', name: 'Vishal Parihariya', standard: 'VIII', house: 'blue', photo: '17.jpeg', emoji: '👨‍🎓', votes: 0 },
   { id: '18', name: 'Rudra Rane', standard: 'IX', house: 'blue', photo: '18.jpg', emoji: '👨‍🎓', votes: 0 },
   { id: '19', name: 'Versha Kanojiya', standard: 'IX', house: 'blue', photo: '19.jpeg', emoji: '👩‍🎓', votes: 0 },
   { id: '20', name: 'Pallavi Singh', standard: 'VIII', house: 'blue', photo: '20.jpeg', emoji: '👩‍🎓', votes: 0 },
